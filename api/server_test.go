@@ -7,15 +7,15 @@ import (
 )
 
 func TestProxyServer(t *testing.T) {
-	server := NewNoteServer()
+	store := StubNoteStore{}
+	server := NewNoteServer(&store)
 	t.Run("Running Server", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
-		code := response.Code
-		assertStatus(t, code, http.StatusOK)
+		assertStatus(t, response.Code, http.StatusOK)
 
 		got := response.Body.String()
 		want := "Hello World!"
@@ -26,11 +26,11 @@ func TestProxyServer(t *testing.T) {
 	})
 }
 
-func assertStatus(t testing.TB, got, want int) {
+func assertStatus(t testing.TB, responseCode, expectedStatusCode int) {
 	t.Helper()
 
-	if got != want {
-		t.Errorf("got status %d, want %d", got, want)
+	if responseCode != expectedStatusCode {
+		t.Errorf("got status %d, expected status code %d", responseCode, expectedStatusCode)
 	}
 
 }

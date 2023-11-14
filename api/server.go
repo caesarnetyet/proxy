@@ -1,13 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
-
-	"github.com/go-chi/chi/v5"
 )
 
+type NoteStore interface {
+	findNote(id int) (Note, error)
+	storeNote(title string, content string) (Note, error)
+}
+
 type NoteServer struct {
+	store NoteStore
 	http.Handler
 }
 
@@ -17,23 +20,10 @@ type Note struct {
 	Content string `json:"content"`
 }
 
-func NewNoteServer() *NoteServer {
+func NewNoteServer(store NoteStore) *NoteServer {
 	server := new(NoteServer)
-	router := chi.NewRouter()
-
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-	})
-
-	router.Get("/notes/{id}", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("content-type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		note := Note{1, "TODO", "Im working on these Notes"}
-
-		json.NewEncoder(w).Encode(note)
-	})
-
-	server.Handler = router
+	server.store = store
+	server.Handler = server.getRoutes()
 
 	return server
 }
