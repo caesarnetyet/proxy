@@ -18,7 +18,7 @@ func (s *NoteServer) handleGetNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	note, err := s.store.findNote(id)
+	note, err := s.store.findNote(r.Context(), id)
 
 	if err != nil {
 		http.Error(w, "Note was not found", http.StatusNotFound)
@@ -40,7 +40,7 @@ func (s *NoteServer) handlePostNote(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprint("Request decode failed", err.Error()), http.StatusBadRequest)
 		return
 	}
-	note, err := s.store.storeNote(noteRequest.Title, noteRequest.Content)
+	note, err := s.store.storeNote(r.Context(), noteRequest.Title, noteRequest.Content)
 
 	if err != nil {
 		http.Error(w, fmt.Sprint("Error while trying to save into store", err), http.StatusInternalServerError)

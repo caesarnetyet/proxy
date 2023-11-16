@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"net/http"
 )
 
 type NoteStore interface {
-	findNote(id int) (Note, error)
-	storeNote(title string, content string) (Note, error)
+	findNote(ctx context.Context, id int) (Note, error)
+	storeNote(ctx context.Context, title string, content string) (Note, error)
 }
 
 type NoteServer struct {

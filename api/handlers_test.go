@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,7 +17,7 @@ type StubNoteStore struct {
 	store map[int]Note
 }
 
-func (s *StubNoteStore) findNote(id int) (Note, error) {
+func (s *StubNoteStore) findNote(ctx context.Context, id int) (Note, error) {
 	note, ok := s.store[id]
 	if ok {
 		return note, nil
@@ -24,7 +25,7 @@ func (s *StubNoteStore) findNote(id int) (Note, error) {
 	return Note{}, errors.New("Could not find Note by given ID")
 }
 
-func (s *StubNoteStore) storeNote(title string, content string) (Note, error) {
+func (s *StubNoteStore) storeNote(ctx context.Context, title string, content string) (Note, error) {
 	incrementalID := len(s.store)
 	incrementalID++
 
