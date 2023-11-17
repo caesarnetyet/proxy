@@ -4,9 +4,15 @@ import (
 	"context"
 	"log"
 	"net/http"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	ctx := context.Background()
 	store, err := NewPGNoteStore(ctx)
 	if err != nil {

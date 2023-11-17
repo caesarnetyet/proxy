@@ -1,22 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Proxy pass</title>
-  <script src="https://unpkg.com/htmx.org@1.9.6"></script>
-</head>
-<body>
-  <h1>Hello Proxy!</h1>
-  <button hx-get="/api" hx-trigger="click" hx-target="#result">
-    Click here to load content
-  </button>
-   <div id="result">Loading…</div>
+  <headp>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proxy</title>
+    <link rel="stylesheet" href="./style.css" />
+  </headp>
+  <body>
+    <div class="d-flex">
+      <div class="form-wrapper">
+        <form id="add-note">
+          <div>
+            <label for="note-title">Title</label>
+            <input required type="text" id="note-title" />
+          </div>
+          <div>
+            <label for="note-content">Content</label>
+            <textarea
+              required
+              id="note-content"
+              placeholder="Note description..."
+            ></textarea>
+          </div>
+          <button type="submit">Add Note</button>
+        </form>
+      </div>
 
-  
-</body>
+      <div class="note-wrapper" id="note-wrapper"></div>
+    </div>
+  </body>
 </html>
 
 <script>
-  
+  const noteWrapper = document.getElementById("note-wrapper");
+  const addNoteForm = document.getElementById("add-note");
+  let notes = [];
+
+  addNoteForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const noteTitle = document.getElementById("note-title").value;
+    const noteContent = document.getElementById("note-content").value;
+    const note = {
+      title: noteTitle,
+      content: noteContent,
+    };
+    noteRequest(note);
+  });
+
+  const fetchNotes = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/notes");
+      const data = await res.json();
+      notes = [...data.data];
+      renderNotes();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchNotes();
+
+  const renderNotes = () => {
+    noteWrapper.innerHTML = notes
+      .map((note) => {
+        return `
+        <div class="note">
+          <h2>${note.title}</h2>
+          <p>${note.content}</p>
+        </div>
+      `;
+      })
+      .join("");
+  };
+
+  const noteRequest = async (noteBody) => {
+    try {
+      const res = await fetch("http://localhost:3000/notes", {
+        method: "POST",
+        body: JSON.stringify(noteBody),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      notes.push(data.data);
+      renderNotes();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 </script>

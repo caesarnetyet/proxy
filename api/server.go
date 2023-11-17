@@ -8,6 +8,7 @@ import (
 type NoteStore interface {
 	findNote(ctx context.Context, id int) (Note, error)
 	storeNote(ctx context.Context, title string, content string) (Note, error)
+	allNotes(ctx context.Context) ([]Note, error)
 }
 
 type NoteServer struct {

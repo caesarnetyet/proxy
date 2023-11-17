@@ -35,6 +35,16 @@ func (s *StubNoteStore) storeNote(ctx context.Context, title string, content str
 	return s.store[incrementalID], nil
 }
 
+func (s *StubNoteStore) allNotes(ctx context.Context) ([]Note, error) {
+	notes := make([]Note, 0, len(s.store))
+
+	for _, note := range s.store {
+		notes = append(notes, note)
+	}
+
+	return notes, nil
+}
+
 func TestNoteHandlers(t *testing.T) {
 	store := StubNoteStore{map[int]Note{
 		1:  {ID: 1, Title: "TODO", Content: "Im working on these Notes"},
@@ -95,6 +105,25 @@ func TestNoteHandlers(t *testing.T) {
 
 		assertNote(t, got.Data, want)
 	})
+	t.Run("Get all notes", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/notes", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+
+		var got GetNotesResponseDTO
+
+		decodeNoteResponseDTO(t, response.Body, &got)
+
+		notes, _ := store.allNotes(context.Background())
+
+		want := GetNotesResponseDTO{Message: "Notes retrieved successfully", Data: notes}
+
+		assertNote(t, got, want)
+
+	})
 
 }
 
@@ -112,7 +141,7 @@ func newGETNoteRequest(method string, id int, body io.Reader) *http.Request {
 	return request
 }
 
-func decodeNoteResponseDTO(t testing.TB, body io.Reader, response *NoteStoreResponseDTO) {
+func decodeNoteResponseDTO(t testing.TB, body io.Reader, response interface{}) {
 	t.Helper()
 
 	if err := json.NewDecoder(body).Decode(response); err != nil {
@@ -121,7 +150,7 @@ func decodeNoteResponseDTO(t testing.TB, body io.Reader, response *NoteStoreResp
 
 }
 
-func assertNote(t testing.TB, got, want Note) {
+func assertNote(t testing.TB, got, want interface{}) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Got Note %v, want %v", got, want)
