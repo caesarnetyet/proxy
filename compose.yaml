@@ -7,14 +7,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
-    ports:
-      - 5432:5432
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
-      - ./sql-scripts:/docker-entrypoint-initdb.d
     networks:
       - db-network
-        
+
   proxy:
     image: nginx:alpine
     container_name: proxy_nginx
@@ -25,19 +22,14 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./index.html:/usr/share/nginx/html/index.html
+      - ./styles.css:/usr/share/nginx/html/styles.css
     networks:
       - proxy-network
 
   backend:
-    image: golang:alpine
+    build: ./api
     container_name: proxy_backend
-    environment:
-      - POSTGRES_CONNECTION_STRING=postgres://postgres:postgres@postgres:5432/postgres
     restart: always
-    volumes: 
-      - ./api:/go/src/app
-    working_dir: /go/src/app
-    command: go run .
     networks:
       - proxy-network
       - db-network
